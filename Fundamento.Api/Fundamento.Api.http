@@ -1,0 +1,6 @@
+@Fundamento.Api_HostAddress = http://localhost:5151
+
+GET {{Fundamento.Api_HostAddress}}/product/
+Accept: application/json
+
+###
