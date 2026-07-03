@@ -1,0 +1,15 @@
+## .NET
+bin/
+obj/
+*.user
+
+## Secrets
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+## VS / Rider
+.vs/
+.idea/
+*.suo
+*.DS_Store

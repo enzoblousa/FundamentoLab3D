@@ -6,7 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<SysDbContext>(opt => opt.UseInMemoryDatabase("ProductList"));
+builder.Services.AddDbContext<SysDbContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiDocument(config =>
 {
@@ -49,7 +49,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SysDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 
     if (!db.Users.Any())
     {
@@ -94,12 +94,12 @@ orderItems.MapPut("/{id}", ReplaceOrder).RequireAuthorization("AdminOnly");
 orderItems.MapPatch("/{id}", UpdateOrderItemQuantities).RequireAuthorization("AdminOnly");
 orderItems.MapDelete("/{id}", DeleteOrder).RequireAuthorization("AdminOnly");
 authItems.MapPost("/login", Login);
+authItems.MapPost("/register", Register);
 productItems.MapGet("/", GetAllProducts);
 productItems.MapGet("/{id}", GetProductById);
 productItems.MapPost("/", CreateProduct).RequireAuthorization("AdminOnly");
 productItems.MapPut("/{id}", UpdateProduct).RequireAuthorization("AdminOnly");
 productItems.MapDelete("/{id}", DeleteProduct).RequireAuthorization("AdminOnly");
-
 
 
 static async Task<IResult> GetOrder(SysDbContext db)
@@ -231,6 +231,8 @@ static async Task<IResult> DeleteOrder(int id, SysDbContext db)
 
     return TypedResults.NoContent();
 }
+
+
 
 static async Task<IResult> Login(LoginRequest request, SysDbContext db, IConfiguration config)
 {
