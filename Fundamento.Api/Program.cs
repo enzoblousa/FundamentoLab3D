@@ -45,6 +45,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
@@ -80,6 +89,7 @@ if (app.Environment.IsDevelopment())
         config.DocExpansion = "list";
     });
 }
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -101,10 +111,34 @@ productItems.MapPost("/", CreateProduct).RequireAuthorization("AdminOnly");
 productItems.MapPut("/{id}", UpdateProduct).RequireAuthorization("AdminOnly");
 productItems.MapDelete("/{id}", DeleteProduct).RequireAuthorization("AdminOnly");
 
+// COMO DEVERIA SER
+static async Task<IResult> Register(RegisterRequest registerRequest, SysDbContext db)
+{
+    // 1. Verifica se email já existe
+    var exists = await db.Users.AnyAsync(u => u.Email == registerRequest.Email);
+    if (exists)
+        return TypedResults.Conflict("Email já cadastrado.");
+
+    // 2. Cria a entidade User a partir do DTO
+    var user = new User
+    {
+        Email = registerRequest.Email,
+        PasswordHash = PasswordHasher.Hash(registerRequest.Password), // hash aqui!
+        Role = "User"
+    };
+
+    // 3. Salva no banco
+    db.Users.Add(user);
+    await db.SaveChangesAsync();
+
+    // 4. Retorna apenas o que o cliente precisa saber (sem PasswordHash!)
+    return TypedResults.Created($"/auth/{user.Id}", new { user.Id, user.Email, user.Role });
+}
+
 
 static async Task<IResult> GetOrder(SysDbContext db)
 {
-    return TypedResults.Ok(await db.Orders.ToArrayAsync());
+    return TypedResults.Ok(await db.Orders.Include(o => o.OrderItems).ToArrayAsync());
 }
 static async Task<IResult> CreateOrder(List<OrderItemRequest> items, SysDbContext db)
 {
@@ -149,7 +183,7 @@ static async Task<IResult> CreateOrder(List<OrderItemRequest> items, SysDbContex
 
 static async Task<IResult> GetOrderById(int id, SysDbContext db)
 {
-    return await db.Orders.FindAsync(id)
+    return await db.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == id)
         is Order o
             ? TypedResults.Ok(o)
             : TypedResults.NotFound();
@@ -282,22 +316,42 @@ static async Task<IResult> GetProductById(int id, SysDbContext db)
             : TypedResults.NotFound();
 }
 
-static async Task<IResult> CreateProduct(Product product, SysDbContext db)
+static async Task<IResult> CreateProduct(ProductRequest request, SysDbContext db)
 {
+    if (string.IsNullOrWhiteSpace(request.Name))
+        return TypedResults.BadRequest("Name é obrigatório.");
+
+    if (request.Price <= 0)
+        return TypedResults.BadRequest("Price precisa ser maior que zero.");
+
+    var product = new Product
+    {
+        Name = request.Name,
+        Description = request.Description,
+        Price = request.Price
+    };
+
     db.Products.Add(product);
     await db.SaveChangesAsync();
 
     return TypedResults.Created($"/product/{product.Id}", product);
 }
 
-static async Task<IResult> UpdateProduct(int id, Product inputProduct, SysDbContext db)
+static async Task<IResult> UpdateProduct(int id, ProductRequest request, SysDbContext db)
 {
     var product = await db.Products.FindAsync(id);
 
     if (product is null) return TypedResults.NotFound();
 
-    product.Name = inputProduct.Name;
-    product.Description = inputProduct.Description;
+    if (string.IsNullOrWhiteSpace(request.Name))
+        return TypedResults.BadRequest("Name é obrigatório.");
+
+    if (request.Price <= 0)
+        return TypedResults.BadRequest("Price precisa ser maior que zero.");
+
+    product.Name = request.Name;
+    product.Description = request.Description;
+    product.Price = request.Price;
 
     await db.SaveChangesAsync();
 

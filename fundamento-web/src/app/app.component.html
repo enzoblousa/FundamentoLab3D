@@ -1,0 +1,18 @@
+<mat-toolbar color="primary" class="toolbar">
+  <span class="brand">Fundamento 3D</span>
+  <a mat-button routerLink="/products" routerLinkActive="active-link">Produtos</a>
+  <a mat-button routerLink="/orders" routerLinkActive="active-link">Pedidos</a>
+  <span class="spacer"></span>
+
+  @if (auth.isLoggedIn()) {
+    <span class="user">{{ auth.email() }} ({{ auth.role() }})</span>
+    <button mat-button (click)="logout()">Sair</button>
+  } @else {
+    <a mat-button routerLink="/login">Entrar</a>
+    <a mat-button routerLink="/register">Cadastrar</a>
+  }
+</mat-toolbar>
+
+<main class="container">
+  <router-outlet />
+</main>
