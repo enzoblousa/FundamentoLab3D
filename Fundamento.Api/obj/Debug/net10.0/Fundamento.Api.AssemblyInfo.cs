@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Fundamento.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f0c10d4801f2ed672e1ddf48a59e8feeea4a8d4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2399ee9f51be335c0347944efb92559b3c3f0ebf")]
 [assembly: System.Reflection.AssemblyProductAttribute("Fundamento.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Fundamento.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

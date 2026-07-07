@@ -9,4 +9,5 @@ class SysDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Order> Orders =>Set<Order>();
     public DbSet<OrderItem> OrderItems =>Set<OrderItem>();
+    public DbSet<Category> Categories => Set<Category>();
 }
