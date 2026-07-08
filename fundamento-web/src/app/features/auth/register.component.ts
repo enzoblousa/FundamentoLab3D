@@ -5,8 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -32,10 +32,6 @@ import { AuthService } from '../../core/services/auth.service';
               }
             </mat-form-field>
 
-            @if (error()) {
-              <p class="error">{{ error() }}</p>
-            }
-
             <button mat-flat-button type="submit" [disabled]="form.invalid || loading()">
               {{ loading() ? 'Cadastrando...' : 'Cadastrar' }}
             </button>
@@ -48,17 +44,15 @@ import { AuthService } from '../../core/services/auth.service';
     .auth-page { display: flex; justify-content: center; padding-top: 3rem; }
     mat-card { width: 100%; max-width: 400px; }
     form { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
-    .error { color: #b00020; margin: 0 0 0.5rem; }
   `
 })
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
   loading = signal(false);
-  error = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -68,17 +62,17 @@ export class RegisterComponent {
   submit(): void {
     if (this.form.invalid) return;
     this.loading.set(true);
-    this.error.set(null);
 
     const { email, password } = this.form.getRawValue();
     this.auth.register(email, password).subscribe({
       next: () => {
-        this.snackBar.open('Conta criada! Faça login para continuar.', 'OK', { duration: 5000 });
+        this.toast.success('Conta criada! Faça login para continuar.');
         this.router.navigate(['/login']);
       },
       error: err => {
         this.loading.set(false);
-        this.error.set(err.status === 409 ? 'Este email já está cadastrado.' : 'Erro ao cadastrar. Tente novamente.');
+        const message = err.status === 409 ? 'Este email já está cadastrado.' : 'Erro ao cadastrar. Tente novamente.';
+        this.toast.error(message);
       }
     });
   }

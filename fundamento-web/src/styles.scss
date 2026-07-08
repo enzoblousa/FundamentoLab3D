@@ -1,7 +1,306 @@
+@use '@angular/material' as mat;
+
+// Fundamento 3D — identidade profissional:
+// peças impressas em 3D, apresentadas com a precisão de um catálogo técnico.
+// Space Grotesk carrega a marca (geométrica, precisa); Inter carrega o resto.
+
+:root {
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$violet-palette,
+    ),
+    typography: (
+      plain-family: Inter,
+      brand-family: Space Grotesk,
+    ),
+    density: 0,
+  ));
+}
+
+// Bloco separado para vencer a ordem de saída do mixin acima
+:root {
+  // Paleta da marca
+  --fl-papel: #ffffff;
+  --fl-cartao: #ffffff;
+  --fl-tinta: #121212;
+  --fl-tinta-suave: #737373;
+  --fl-linha: #e3e3e3;
+  --fl-roxo: #9900cc;
+  --fl-roxo-escuro: #7a00a3;
+  --fl-sol: #ffcc00;
+  --fl-sol-escuro: #a67c00;
+  --fl-menta: #33cc99;
+  --fl-laranja: #ff6600;
+  --fl-vermelho: #e0483e;
+
+  // Estado de pop-up: sucesso (menta), erro (vermelho), aviso neutro (âmbar)
+  --fl-status-sucesso: var(--fl-menta);
+  --fl-status-erro: var(--fl-vermelho);
+  --fl-status-aviso: var(--fl-sol-escuro);
+  --fl-fonte-marca: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --fl-fonte-corpo: Inter, ui-sans-serif, system-ui, sans-serif;
+
+  // Elevação: sombras discretas, em camadas — sem contorno duro nem deslocamento
+  --fl-sombra: 0 1px 2px rgba(18, 18, 18, 0.04), 0 6px 20px rgba(18, 18, 18, 0.06);
+  --fl-sombra-alta: 0 4px 10px rgba(18, 18, 18, 0.06), 0 16px 32px rgba(18, 18, 18, 0.1);
+
+  // Ajusta os tokens de sistema do Material para a paleta da loja
+  --mat-sys-primary: var(--fl-roxo);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: #f1d9fa;
+  --mat-sys-on-primary-container: #45016b;
+  --mat-sys-background: var(--fl-papel);
+  --mat-sys-on-background: var(--fl-tinta);
+  --mat-sys-surface: var(--fl-cartao);
+  --mat-sys-on-surface: var(--fl-tinta);
+  --mat-sys-surface-variant: #f5f5f5;
+  --mat-sys-on-surface-variant: var(--fl-tinta-suave);
+  --mat-sys-outline: #c7c7c7;
+  --mat-sys-outline-variant: var(--fl-linha);
+  --mat-sys-surface-container-lowest: #ffffff;
+  --mat-sys-surface-container-low: #fafafa;
+  --mat-sys-surface-container: #f5f5f5;
+  --mat-sys-surface-container-high: #efefef;
+  --mat-sys-surface-container-highest: #e9e9e9;
+
+  // Cantos discretos — pílulas reservadas para etiquetas, não para toda a interface
+  --mdc-filled-button-container-shape: 10px;
+  --mdc-outlined-button-container-shape: 10px;
+  --mdc-text-button-container-shape: 10px;
+  --mdc-protected-button-container-shape: 10px;
+  --mdc-outlined-card-container-shape: 14px;
+  --mdc-elevated-card-container-shape: 14px;
+
+  // Movimento: mesmo ritmo em toda a aplicação — uma saída suave, como uma camada assentando
+  --fl-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --fl-duracao: 260ms;
+  --fl-duracao-lenta: 520ms;
+}
+
 html,
 body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+body {
+  font-family: var(--fl-fonte-corpo);
+  font-weight: 400;
+  background: var(--fl-papel);
+  color: var(--fl-tinta);
+}
+
+// Título de página: Space Grotesk firme, com uma régua de camadas de impressão ao lado
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0.25rem 0 1.25rem;
+  font-family: var(--fl-fonte-marca);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+// Marca: barra de camadas de impressão — um gradiente das quatro cores principais
+h1::before {
+  content: '';
+  flex: none;
+  width: 5px;
+  height: 1.5em;
+  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--fl-roxo) 0%,
+    var(--fl-roxo) 25%,
+    var(--fl-menta) 25%,
+    var(--fl-menta) 50%,
+    var(--fl-laranja) 50%,
+    var(--fl-laranja) 75%,
+    var(--fl-sol) 75%,
+    var(--fl-sol) 100%
+  );
+}
+
+// Entrada do conteúdo a cada navegação: as seções assentam em sequência,
+// como camadas de uma peça sendo impressas de baixo para cima.
+main.container > * {
+  animation: fl-entrar var(--fl-duracao) var(--fl-ease) backwards;
+}
+main.container > *:nth-child(1) { animation-delay: 0ms; }
+main.container > *:nth-child(2) { animation-delay: 60ms; }
+main.container > *:nth-child(3) { animation-delay: 120ms; }
+main.container > *:nth-child(4) { animation-delay: 180ms; }
+main.container > *:nth-child(n + 5) { animation-delay: 220ms; }
+
+@keyframes fl-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+// Peça "impressa": cresce da base até a altura final — o mesmo gesto do bloco de camadas
+// usado nas miniaturas de produto (ver print-swatch.ts). Reaproveitado em qualquer .thumb-piece.
+@keyframes fl-imprimir {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+// Marca de camadas (barra de 4 cores do h1): empilha de baixo para cima ao entrar
+h1::before {
+  animation: fl-empilhar var(--fl-duracao-lenta) var(--fl-ease) backwards;
+}
+
+@keyframes fl-empilhar {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+
+// Tabelas: cabeçalho técnico, sem ares de brinquedo
+th[mat-header-cell] {
+  font-family: var(--fl-fonte-corpo);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fl-tinta-suave);
+}
+
+td[mat-cell] {
+  border-bottom-color: var(--fl-linha);
+  font-family: var(--fl-fonte-corpo);
+}
+
+tr[mat-row]:hover {
   background: #fafafa;
+}
+
+// Números com peso firme e alinhamento tabular, sem trocar de fonte
+.num {
+  font-family: var(--fl-fonte-corpo);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--fl-linha);
+  border-radius: 14px;
+  background: var(--fl-cartao);
+}
+
+.mat-mdc-card-subtitle {
+  font-family: var(--fl-fonte-corpo);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+// Cartões do Material (login, cadastro, formulário, pedidos): superfície limpa,
+// borda de um fio e sombra suave em camadas.
+mat-card.mat-mdc-card {
+  --mdc-outlined-card-container-color: var(--fl-cartao);
+  border: 1px solid var(--fl-linha) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--fl-sombra) !important;
+}
+
+.mat-mdc-card-title {
+  font-family: var(--fl-fonte-marca) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+}
+
+.mat-mdc-form-field {
+  font-family: var(--fl-fonte-corpo);
+}
+
+.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading,
+.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch,
+.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-radius: 10px;
+}
+
+// Botões: preenchimento sólido, sombra suave que aparece no hover
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button {
+  font-family: var(--fl-fonte-corpo) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  box-shadow: none !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease !important;
+}
+
+.mat-mdc-unelevated-button:not(:disabled):hover,
+.mat-mdc-raised-button:not(:disabled):hover {
+  box-shadow: var(--fl-sombra) !important;
+}
+
+.mat-mdc-unelevated-button:not(:disabled):active,
+.mat-mdc-raised-button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.mat-mdc-unelevated-button:disabled,
+.mat-mdc-raised-button:disabled {
+  box-shadow: none !important;
+  opacity: 0.5;
+}
+
+// Estado vazio: um convite claro, não um beco
+.empty {
+  margin: 0;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--mat-sys-outline);
+  border-radius: 14px;
+  text-align: center;
+  font-weight: 500;
+  color: var(--fl-tinta-suave);
+}
+
+// Pop-up "barra de camada": a moldura do MatSnackBar vira invisível — o
+// cartão visível é inteiramente desenhado pelo ToastComponent (ver
+// core/components/toast.component.ts), que carrega a barra colorida de
+// estado (sucesso/erro/aviso), ecoando a barra de camadas do h1 e da logo.
+.fl-toast-panel .mat-mdc-snackbar-surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  min-width: 0 !important;
+}
+.fl-toast-panel .mat-mdc-snack-bar-label {
+  padding: 0 !important;
+}
+
+// Diálogo de confirmação: mesmo cartão de cantos discretos e sombra em
+// camadas usado no resto da loja.
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 14px !important;
+  box-shadow: var(--fl-sombra-alta) !important;
+}
+.mat-mdc-dialog-title {
+  font-family: var(--fl-fonte-marca) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fl-roxo);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

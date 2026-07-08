@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -28,10 +29,6 @@ import { AuthService } from '../../core/services/auth.service';
               <input matInput type="password" formControlName="password" autocomplete="current-password" />
             </mat-form-field>
 
-            @if (error()) {
-              <p class="error">{{ error() }}</p>
-            }
-
             <button mat-flat-button type="submit" [disabled]="form.invalid || loading()">
               {{ loading() ? 'Entrando...' : 'Entrar' }}
             </button>
@@ -44,16 +41,15 @@ import { AuthService } from '../../core/services/auth.service';
     .auth-page { display: flex; justify-content: center; padding-top: 3rem; }
     mat-card { width: 100%; max-width: 400px; }
     form { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
-    .error { color: #b00020; margin: 0 0 0.5rem; }
   `
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   loading = signal(false);
-  error = signal<string | null>(null);
 
   form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -63,14 +59,17 @@ export class LoginComponent {
   submit(): void {
     if (this.form.invalid) return;
     this.loading.set(true);
-    this.error.set(null);
 
     const { email, password } = this.form.getRawValue();
     this.auth.login(email, password).subscribe({
-      next: () => this.router.navigate(['/products']),
+      next: () => {
+        this.toast.success('Login realizado com sucesso!');
+        this.router.navigate(['/']);
+      },
       error: err => {
         this.loading.set(false);
-        this.error.set(err.status === 401 ? 'Email ou senha inválidos.' : 'Erro ao entrar. Tente novamente.');
+        const message = err.status === 401 ? 'Email ou senha inválidos.' : 'Erro ao entrar. Tente novamente.';
+        this.toast.error(message);
       }
     });
   }

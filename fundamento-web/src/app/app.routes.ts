@@ -1,8 +1,12 @@
 import { Routes } from '@angular/router';
-import { adminGuard } from './core/guards/auth.guard';
+import { adminGuard, authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'products' },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
+  },
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent)
@@ -12,9 +16,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register.component').then(m => m.RegisterComponent)
   },
   {
-    path: 'products',
+    path: 'admin',
+    canActivate: [adminGuard],
     loadComponent: () =>
-      import('./features/products/product-list.component').then(m => m.ProductListComponent)
+      import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
   },
   {
     path: 'products/new',
@@ -29,14 +34,26 @@ export const routes: Routes = [
       import('./features/products/product-form.component').then(m => m.ProductFormComponent)
   },
   {
+    path: 'products/:id',
+    loadComponent: () =>
+      import('./features/products/product-detail.component').then(m => m.ProductDetailComponent)
+  },
+  {
     path: 'orders',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./features/orders/order-list.component').then(m => m.OrderListComponent)
   },
   {
-    path: 'orders/new',
+    path: 'categories',
+    canActivate: [adminGuard],
     loadComponent: () =>
-      import('./features/orders/order-create.component').then(m => m.OrderCreateComponent)
+      import('./features/categories/category-list.component').then(m => m.CategoryListComponent)
   },
-  { path: '**', redirectTo: 'products' }
+  {
+    path: 'cart',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent)
+  },
+  { path: '**', redirectTo: '' }
 ];

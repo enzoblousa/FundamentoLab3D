@@ -18,6 +18,7 @@ export class AuthService {
   });
 
   readonly isLoggedIn = computed(() => this.payload() !== null);
+  readonly userId = computed(() => (this.payload()?.['sub'] as string) ?? null);
   readonly email = computed(() => (this.payload()?.['email'] as string) ?? null);
   readonly role = computed(
     () => ((this.payload()?.['role'] ?? this.payload()?.[ROLE_CLAIM]) as string) ?? null

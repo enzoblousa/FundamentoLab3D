@@ -84,9 +84,9 @@ using (var scope = app.Services.CreateScope())
         if (productsByName.TryGetValue(name, out var existing) && existing.ImageUrl is null)
             existing.ImageUrl = imageUrl;
     }
-    BackfillImage("Polvo Articulado", "/products/polvo-articulado.svg");
-    BackfillImage("Cubo de Calibração 3D", "/products/cubo-calibracao.svg");
-    BackfillImage("Polvo Crochê", "/products/polvo-croche.svg");
+    BackfillImage("Polvo Articulado", "/products/polvo-articulado.jpg");
+    BackfillImage("Cubo de Calibração 3D", "/products/cubo-calibracao.jpg");
+    BackfillImage("Polvo Crochê", "/products/polvo-croche.jpg");
 
     // Produtos de exemplo adicionais, para popular a loja com imagens.
     var categoriesByName = db.Categories.ToDictionary(c => c.Name, c => c.Id);
@@ -101,7 +101,7 @@ using (var scope = app.Services.CreateScope())
             Price = 34.9m,
             CategoryId = CategoryId("Bonecos"),
             Colors = new List<string> { "Verde" },
-            ImageUrl = "/products/trex-articulado.svg"
+            ImageUrl = "/products/trex-articulado.jpg"
         },
         new Product
         {
@@ -110,7 +110,7 @@ using (var scope = app.Services.CreateScope())
             Price = 24.5m,
             CategoryId = CategoryId("Decoração"),
             Colors = new List<string> { "Azul" },
-            ImageUrl = "/products/suporte-celular.svg"
+            ImageUrl = "/products/suporte-celular.jpg"
         },
         new Product
         {
@@ -119,7 +119,7 @@ using (var scope = app.Services.CreateScope())
             Price = 19.9m,
             CategoryId = CategoryId("Jogos"),
             Colors = new List<string> { "Vermelho", "Amarelo" },
-            ImageUrl = "/products/jogo-da-velha.svg"
+            ImageUrl = "/products/jogo-da-velha.jpg"
         },
         new Product
         {
@@ -128,7 +128,7 @@ using (var scope = app.Services.CreateScope())
             Price = 29.9m,
             CategoryId = CategoryId("Personagens"),
             Colors = new List<string> { "Azul", "Roxo" },
-            ImageUrl = "/products/mascote-robo.svg"
+            ImageUrl = "/products/mascote-robo.jpg"
         },
         new Product
         {
@@ -137,7 +137,7 @@ using (var scope = app.Services.CreateScope())
             Price = 27.9m,
             CategoryId = CategoryId("Decoração"),
             Colors = new List<string> { "Vermelho" },
-            ImageUrl = "/products/vaso-espiral.svg"
+            ImageUrl = "/products/vaso-espiral.jpg"
         }
     };
 
@@ -467,14 +467,16 @@ static async Task<IResult> UpdateProduct(int id, ProductRequest request, SysDbCo
 
 static async Task<IResult> DeleteProduct(int id, SysDbContext db)
 {
-    if (await db.Products.FindAsync(id) is Product product)
-    {
-        db.Products.Remove(product);
-        await db.SaveChangesAsync();
-        return TypedResults.NoContent();
-    }
+    if (await db.Products.FindAsync(id) is not Product product)
+        return TypedResults.NotFound();
 
-    return TypedResults.NotFound();
+    var hasOrders = await db.OrderItems.AnyAsync(oi => oi.ProductId == id);
+    if (hasOrders)
+        return TypedResults.Conflict("Não é possível excluir um produto que já foi comprado em algum pedido.");
+
+    db.Products.Remove(product);
+    await db.SaveChangesAsync();
+    return TypedResults.NoContent();
 }
 
 static async Task<IResult> GetAllCategories(SysDbContext db)

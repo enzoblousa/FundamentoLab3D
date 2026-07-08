@@ -1,18 +1,44 @@
-<mat-toolbar color="primary" class="toolbar">
-  <span class="brand">Fundamento 3D</span>
-  <a mat-button routerLink="/products" routerLinkActive="active-link">Produtos</a>
-  <a mat-button routerLink="/orders" routerLinkActive="active-link">Pedidos</a>
-  <span class="spacer"></span>
+<header class="site-header">
+  <a class="brand" routerLink="/">
+    <img class="brand-mark" src="/logo-fundamento.png" alt="FundamenTO" />
+  </a>
 
-  @if (auth.isLoggedIn()) {
-    <span class="user">{{ auth.email() }} ({{ auth.role() }})</span>
-    <button mat-button (click)="logout()">Sair</button>
-  } @else {
-    <a mat-button routerLink="/login">Entrar</a>
-    <a mat-button routerLink="/register">Cadastrar</a>
-  }
-</mat-toolbar>
+  <div class="header-actions">
+    <a mat-icon-button routerLink="/cart" routerLinkActive="active-link" aria-label="Sacola" [class.bump]="cartBump()">
+      <mat-icon
+        [matBadge]="cart.count()"
+        [matBadgeHidden]="cart.count() === 0"
+        matBadgeSize="small"
+        matBadgeColor="warn"
+      >
+        shopping_bag
+      </mat-icon>
+    </a>
+
+    @if (auth.isLoggedIn()) {
+      <span class="user">{{ auth.email() }}</span>
+      <button mat-button (click)="logout()">Sair</button>
+    } @else {
+      <a mat-button routerLink="/login">Entrar</a>
+    }
+  </div>
+</header>
 
 <main class="container">
   <router-outlet />
 </main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <nav class="footer-nav" aria-label="Navegação">
+      <a routerLink="/" fragment="brinquedos" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Catálogo</a>
+      @if (!auth.isLoggedIn()) {
+        <a routerLink="/register">Cadastrar</a>
+      }
+      @if (auth.isAdmin()) {
+        <a routerLink="/admin" routerLinkActive="active-link">Painel administrativo</a>
+      }
+    </nav>
+    <p class="footer-note">Fundamento 3D &mdash; peças impressas sob encomenda.</p>
+  </div>
+</footer>
